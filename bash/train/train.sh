@@ -4,7 +4,7 @@
 # export WANDB_DISABLED=true
 
 uv run train.py \
-  --config-name=train_diffusion_unet_timm_umi_workspace \
+  --config-name=train/unet_timm_umi \
   task.dataset_path=./data/zarr/sample/pushing_2024_05_29_huy.zarr.zip \
   'hydra.run.dir=data/policy/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}' \
   'dataloader.batch_size=32' \
