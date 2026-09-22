@@ -18,9 +18,6 @@ shape_meta: &shape_meta
   action: 
     shape: [10]
 
-env_runner:
-  _target_: diffusion_policy.env_runner.real_pusht_image_runner.RealPushTImageRunner
-
 dataset:
   _target_: diffusion_policy.dataset.umi_image_dataset.UmiImageDataset
   shape_meta: *shape_meta
