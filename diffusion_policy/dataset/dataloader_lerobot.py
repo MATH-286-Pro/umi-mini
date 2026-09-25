@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from diffusion_policy.dataset.replay_buffer import ReplayBuffer
-from diffusion_policy.dataset.dataloader_zarr import UmiDatasetZarr
+from diffusion_policy.dataset.dataset_umi import UmiDatasetBase
 
 
 class _LeRobotVideoArray:
@@ -109,7 +109,7 @@ def _load_schema(dataset_path: Path, info: dict) -> dict:
     }
 
 
-class UmiDatasetLeRobot(UmiDatasetZarr):
+class UmiDatasetLeRobot(UmiDatasetBase):
     """Train UMI policies from absolute-pose LeRobot v3 datasets.
 
     LeRobot remains the storage layer. This adapter reconstructs the legacy
@@ -117,17 +117,26 @@ class UmiDatasetLeRobot(UmiDatasetZarr):
     sampling, SE(3) relative conversion, and normalization stay identical.
     """
 
-    def __init__(self, shape_meta: dict, dataset_path: str, repo_id: str,
-            cache_dir=None, pose_repr: dict={}, action_padding: bool=False,
+    def __init__(self,
+            shape_meta: dict,
+            dataset_path: str,
+            cache_dir=None,
+            pose_repr: dict={},
+            action_padding: bool=False,
             temporally_independent_normalization: bool=False,
-            repeat_frame_prob: float=0.0, seed: int=42,
-            val_ratio: float=0.0, max_duration=None, image_transform=None,
+            repeat_frame_prob: float=0.0,
+            seed: int=42,
+            val_ratio: float=0.0,
+            max_duration=None,
+            image_transform=None,
             normalizer_num_workers: int=0,
             video_backend: str="pyav"):
+
         if cache_dir is not None:
-            raise ValueError("cache_dir is only supported by UmiDatasetZarr")
+            raise ValueError("cache_dir is not supported by UmiDatasetLeRobot")
         if video_backend != "pyav":
             raise ValueError("The lightweight LeRobot loader currently supports video_backend='pyav' only")
+
         dataset_path = Path(dataset_path).expanduser().resolve()
         with (dataset_path / "meta" / "info.json").open() as file:
             info = json.load(file)
@@ -151,11 +160,13 @@ class UmiDatasetLeRobot(UmiDatasetZarr):
             "data": data,
             "meta": {"episode_ends": episode_ends},
         })
+        
         self.lerobot_info = info
         self.lerobot_schema = schema
+
         super().__init__(
             shape_meta=shape_meta,
-            dataset_path=str(dataset_path),
+            replay_buffer=replay_buffer,
             pose_repr=pose_repr,
             action_padding=action_padding,
             temporally_independent_normalization=temporally_independent_normalization,
@@ -165,5 +176,4 @@ class UmiDatasetLeRobot(UmiDatasetZarr):
             max_duration=max_duration,
             image_transform=image_transform,
             normalizer_num_workers=normalizer_num_workers,
-            replay_buffer=replay_buffer,
         )
