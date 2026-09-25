@@ -168,7 +168,6 @@ checkpoint:
     k: 20
     format_str: 'epoch={epoch:04d}-train_loss={train_loss:.3f}.ckpt'
   save_last_ckpt: True
-  save_last_snapshot: False
 
 multi_run:
   run_dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}

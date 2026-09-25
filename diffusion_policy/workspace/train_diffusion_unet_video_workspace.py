@@ -159,8 +159,6 @@ class TrainDiffusionUnetVideoWorkspace(BaseWorkspace):
                         # checkpointing
                         if cfg.checkpoint.save_last_ckpt:
                             self.save_checkpoint()
-                        if cfg.checkpoint.save_last_snapshot:
-                            self.save_snapshot()
 
                     # validation
                     should_val = self.global_step % cfg.training.val_every == 0

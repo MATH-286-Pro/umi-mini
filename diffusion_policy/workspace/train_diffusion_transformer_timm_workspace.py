@@ -297,8 +297,6 @@ class TrainDiffusionTransformerTimmWorkspace(BaseWorkspace):
                     # checkpointing
                     if cfg.checkpoint.save_last_ckpt:
                         self.save_checkpoint()
-                    if cfg.checkpoint.save_last_snapshot:
-                        self.save_snapshot()
 
                     # sanitize metric names
                     metric_dict = dict()

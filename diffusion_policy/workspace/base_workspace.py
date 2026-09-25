@@ -114,23 +114,6 @@ class BaseWorkspace:
             **kwargs)
         return instance
 
-    def save_snapshot(self, tag='latest'):
-        """
-        Quick loading and saving for reserach, saves full state of the workspace.
-
-        However, loading a snapshot assumes the code stays exactly the same.
-        Use save_checkpoint for long-term storage.
-        """
-        path = pathlib.Path(self.output_dir).joinpath('snapshots', f'{tag}.pkl')
-        path.parent.mkdir(parents=False, exist_ok=True)
-        torch.save(self, path.open('wb'), pickle_module=dill)
-        return str(path.absolute())
-    
-    @classmethod
-    def create_from_snapshot(cls, path):
-        return torch.load(open(path, 'rb'), pickle_module=dill)
-
-
 def _copy_to_cpu(x):
     if isinstance(x, torch.Tensor):
         return x.detach().to('cpu')

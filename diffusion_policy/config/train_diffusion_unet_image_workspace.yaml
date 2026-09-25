@@ -135,7 +135,6 @@ checkpoint:
     k: 5
     format_str: 'epoch={epoch:04d}-test_mean_score={test_mean_score:.3f}.ckpt'
   save_last_ckpt: True
-  save_last_snapshot: False
 
 multi_run:
   run_dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
