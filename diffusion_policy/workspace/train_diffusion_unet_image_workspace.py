@@ -89,7 +89,10 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
     def run(self):
         cfg = copy.deepcopy(self.cfg)
 
+        # hugging face 训练加速库
         accelerator = Accelerator(log_with='wandb')
+
+        # wandb 配置
         wandb_cfg = OmegaConf.to_container(cfg.logging, resolve=True)
         wandb_cfg.pop('project')
         accelerator.init_trackers(
@@ -105,11 +108,18 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                 accelerator.print(f"Resuming from checkpoint {lastest_ckpt_path}")
                 self.load_checkpoint(path=lastest_ckpt_path)
 
-        # configure dataset
+        # 训练数据集 train dataset configuration
         dataset: BaseImageDataset
         dataset = hydra.utils.instantiate(cfg.task.dataset)
         assert isinstance(dataset, BaseImageDataset) or isinstance(dataset, BaseDataset)
         train_dataloader = DataLoader(dataset, **cfg.dataloader)
+
+        # 验证数据集 val dataset configuration
+        val_dataset = dataset.get_validation_dataset()
+        val_dataloader = DataLoader(val_dataset, **cfg.val_dataloader)
+        print('train dataset:', len(dataset), 'train dataloader:', len(train_dataloader))
+        print('val dataset:', len(val_dataset), 'val dataloader:', len(val_dataloader))
+
 
         # compute normalizer on the main process and save to disk
         normalizer_path = os.path.join(self.output_dir, 'normalizer.pkl')
@@ -120,12 +130,6 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
         # load normalizer on all processes
         accelerator.wait_for_everyone()
         normalizer = pickle.load(open(normalizer_path, 'rb'))
-
-        # configure validation dataset
-        val_dataset = dataset.get_validation_dataset()
-        val_dataloader = DataLoader(val_dataset, **cfg.val_dataloader)
-        print('train dataset:', len(dataset), 'train dataloader:', len(train_dataloader))
-        print('val dataset:', len(val_dataset), 'val dataloader:', len(val_dataloader))
 
         self.model.set_normalizer(normalizer)
         if cfg.training.use_ema:
@@ -151,17 +155,6 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                 cfg.ema,
                 model=self.ema_model)
 
-        # # configure logging
-        # wandb_run = wandb.init(
-        #     dir=str(self.output_dir),
-        #     config=OmegaConf.to_container(cfg, resolve=True),
-        #     **cfg.logging
-        # )
-        # wandb.config.update(
-        #     {
-        #         "output_dir": self.output_dir,
-        #     }
-        # )
 
         # configure checkpoint
         topk_manager = TopKCheckpointManager(
